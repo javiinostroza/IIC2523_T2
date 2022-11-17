@@ -59,16 +59,36 @@ func deleteProduct(w http.ResponseWriter, r *http.Request) {
     }
 }
 
+func updateProduct(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id := vars["id"]
+	var updatedEvent Product
+	reqBody, _ := ioutil.ReadAll(r.Body)
+	json.Unmarshal(reqBody, &updatedEvent)
+	for i, product := range Products {
+		if product.Id == id {
+
+			product.Name = updatedEvent.Name
+			product.Description = updatedEvent.Description
+			product.Price = updatedEvent.Price
+			product.ExpirationDate = updatedEvent.ExpirationDate
+			Products[i] = product
+			json.NewEncoder(w).Encode(product)
+		}
+	}
+}
+
 func handleRequests() {
-
+	
 	myRouter := mux.NewRouter().StrictSlash(true)
-
-    myRouter.HandleFunc("/", homePage)
+	
+	myRouter.HandleFunc("/", homePage)
 	myRouter.HandleFunc("/products", allProducts).Methods("GET") // READ
 	myRouter.HandleFunc("/product", createNewProduct).Methods("POST") // CREATE
 	myRouter.HandleFunc("/product/{id}", returnSingleProduct).Methods("GET") // READ
 	myRouter.HandleFunc("/product/{id}", deleteProduct).Methods("DELETE") // DELETE
-	// Falta UPDATE
+	myRouter.HandleFunc("/product/{id}", updateProduct).Methods("PUT") // UPDATE
+
     log.Fatal(http.ListenAndServe(":8081", myRouter))
 }
 
