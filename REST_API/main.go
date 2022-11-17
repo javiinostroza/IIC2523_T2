@@ -25,7 +25,6 @@ func homePage(w http.ResponseWriter, r *http.Request){
 }
 
 func allProducts(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Endpoint Hit: All Products Endpoint")
 	json.NewEncoder(w).Encode(Products)
 }
 
@@ -43,7 +42,6 @@ func createNewProduct(w http.ResponseWriter, r *http.Request) {
 	reqBody, _ := ioutil.ReadAll(r.Body)
 	var product Product
 	json.Unmarshal(reqBody, &product)
-	fmt.Println("product: ", product)
 	Products = append(Products, product)
     json.NewEncoder(w).Encode(product)
 }
@@ -52,7 +50,6 @@ func deleteProduct(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
     id := vars["id"]
     for index, product := range Products {
-		fmt.Println("product.id: ", product.Id)
         if product.Id == id {
             Products = append(Products[:index], Products[index+1:]...)
         }
