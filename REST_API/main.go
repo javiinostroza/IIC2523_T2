@@ -3,6 +3,7 @@ package main
 import (
     "fmt"
     "log"
+	"strconv"
 	"io/ioutil"
     "net/http"
 	"encoding/json"
@@ -10,14 +11,24 @@ import (
 )
 
 type Product struct {
-	Id string `json:"Id"`
+	Id int `json:"Id"`
 	Name string  `json:"name"`
 	Description string `json:"description"`
-	Price string `json:"price"`
+	Price int `json:"price"`
 	ExpirationDate string `json:"expiration_date"`
 }
 
 var Products []Product
+
+func check(e error) {
+	/* 
+	Genera un panic en caso de haber un error.
+	Based on https://gobyexample.com/writing-files
+	*/
+    if e != nil {
+        panic(e)
+    }
+}
 
 func homePage(w http.ResponseWriter, r *http.Request){
     fmt.Fprintf(w, "Welcome to the HomePage!")
@@ -31,8 +42,10 @@ func allProducts(w http.ResponseWriter, r *http.Request) {
 func returnSingleProduct(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
     key := vars["id"]
+	intKey, err := strconv.Atoi(key)
+	check(err)
     for _, product := range Products {
-        if product.Id == key {
+        if product.Id == intKey {
             json.NewEncoder(w).Encode(product)
         }
     }
@@ -49,8 +62,10 @@ func createNewProduct(w http.ResponseWriter, r *http.Request) {
 func deleteProduct(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
     id := vars["id"]
+	intId, err := strconv.Atoi(id)
+	check(err)
     for index, product := range Products {
-        if product.Id == id {
+        if product.Id == intId {
             Products = append(Products[:index], Products[index+1:]...)
         }
     }
@@ -59,12 +74,13 @@ func deleteProduct(w http.ResponseWriter, r *http.Request) {
 func updateProduct(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["id"]
+	intId, err := strconv.Atoi(id)
+	check(err)
 	var updatedEvent Product
 	reqBody, _ := ioutil.ReadAll(r.Body)
 	json.Unmarshal(reqBody, &updatedEvent)
 	for i, product := range Products {
-		if product.Id == id {
-
+		if product.Id == intId {
 			product.Name = updatedEvent.Name
 			product.Description = updatedEvent.Description
 			product.Price = updatedEvent.Price
@@ -91,8 +107,8 @@ func handleRequests() {
 
 func main() {
 	Products = []Product{
-        Product{Id: "1", Name: "Cola Cola", Description: "Bebida azucarada gaseosa", Price: "$1.000", ExpirationDate: "25-07-2024"},
-        Product{Id: "2", Name: "Chocman", Description: " Bizcocho bañado relleno con manjar", Price: "$800", ExpirationDate: "21-03-2023"},
+        Product{Id: 1, Name: "Cola Cola", Description: "Bebida azucarada gaseosa", Price: 1000, ExpirationDate: "25-07-2024"},
+        Product{Id: 2, Name: "Chocman", Description: " Bizcocho bañado relleno con manjar", Price: 800, ExpirationDate: "21-03-2023"},
     }
     handleRequests()
 }
